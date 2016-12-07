@@ -2,3 +2,6 @@
 bin/Debug/KesslerSyndrome.pdb
 *.xml
 obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+*.txt
+obj/Debug/KesslerSyndrome.csprojResolveAssemblyReference.cache
+*.pdb
