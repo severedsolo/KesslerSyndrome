@@ -1,0 +1,4 @@
+*.dll
+bin/Debug/KesslerSyndrome.pdb
+*.xml
+obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
