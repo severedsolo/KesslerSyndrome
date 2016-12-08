@@ -11,7 +11,7 @@ namespace KesslerSyndrome
     public class Kessler : MonoBehaviour
     {
         double lastTick = 0;
-        double timeBetweenTicks = 5;
+        double timeBetweenTicks = 30;
         double impactTimer = 0;
         bool spawned;
         System.Random r = new System.Random();
@@ -42,15 +42,13 @@ namespace KesslerSyndrome
                 impactTimer = impactTimer - timeBetweenTicks;
                 return;
             }
-            if (spawned) DebrisTrigger(HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().DebrisStrikeChance);
+            if (spawned) DebrisTrigger(20);
             lastTick = Planetarium.GetUniversalTime();
             int spawn = 0;
             spawn = SpawnChance();
             if (r.Next(1, 100) > spawn || spawned) return;
             impactTimer = r.Next(1, 300);
             Debug.Log("[KesslerSyndrome] Added new Debris Cloud");
-            ScreenMessages.PostScreenMessage("Nearby Debris Cloud Detected!");
-            timeBetweenTicks = 900 / spawn;
             spawned = true;              
         }
 
@@ -82,7 +80,6 @@ namespace KesslerSyndrome
             if (i > chance)
             {
                 spawned = false;
-                ScreenMessages.PostScreenMessage("The Debris Cloud Passed Without Incident");
                 return;
             }
             List<Part> parts = FlightGlobals.ActiveVessel.parts;
@@ -99,7 +96,6 @@ namespace KesslerSyndrome
             Debug.Log("[KesslerSyndrome] Debris impact!");
             ScreenMessages.PostScreenMessage("Micrometeoroid Impact Detected!");
             spawned = false;
-            timeBetweenTicks = 900 / chance;
         }
         public void OnGUI()
         {
