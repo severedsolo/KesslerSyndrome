@@ -1,7 +1,7 @@
 {
-    "NAME"     : "Monthly Budgets",
-    "URL"      : "https://github.com/severedsolo/MonthlyBudgets/blob/master/bin/Release/GameData/MonthlyBudgets/MonthlyBudgets.version",
-    "DOWNLOAD" : "https://github.com/severedsolo/MonthlyBudgets/releases",
+    "NAME"     : "Kessler Syndrome",
+    "URL"      : "https://github.com/severedsolo/KesslerSyndrome/blob/master/bin/Release/GameData/KesslerSyndrome/KesslerSyndrome.version",
+    "DOWNLOAD" : "https://github.com/severedsolo/KesslerSyndrome/releases",
     "GITHUB" :
     {
         "USERNAME" : "severedsolo",
@@ -9,8 +9,8 @@
     },
     "VERSION" :
     {
-        "MAJOR" : 2,
-        "MINOR" : 5,
+        "MAJOR" : 1,
+        "MINOR" : 0,
         "PATCH" : 0,
         "BUILD" : 0
     },
