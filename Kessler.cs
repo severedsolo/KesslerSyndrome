@@ -10,8 +10,8 @@ namespace KesslerSyndrome
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class Kessler : MonoBehaviour
     {
-        double lastTick = 0;
-        double timeBetweenTicks = 30;
+        DateTime nextTick = DateTime.MinValue;
+        double lastChecked = 0;
         double impactTimer = 0;
         bool spawned;
         System.Random r = new System.Random();
@@ -35,15 +35,16 @@ namespace KesslerSyndrome
         void Update()
         {
             if (FlightGlobals.ActiveVessel.altitude < FlightGlobals.ActiveVessel.mainBody.atmosphereDepth) return;
-            double now = Planetarium.GetUniversalTime();
-            if (now - lastTick < timeBetweenTicks) return;
+            if (DateTime.Now < nextTick) return;
+            nextTick = DateTime.Now.AddSeconds(30);
             if (impactTimer > 0)
             {
-                impactTimer = impactTimer - timeBetweenTicks;
+                double timeSinceLastTick = Planetarium.GetUniversalTime() - lastChecked;
+                lastChecked = Planetarium.GetUniversalTime();
+                impactTimer = impactTimer - timeSinceLastTick;
                 return;
             }
             if (spawned) DebrisTrigger(20);
-            lastTick = Planetarium.GetUniversalTime();
             int spawn = 0;
             spawn = SpawnChance();
             if (r.Next(1, 100) > spawn || spawned) return;
