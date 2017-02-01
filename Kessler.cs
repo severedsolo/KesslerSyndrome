@@ -86,16 +86,17 @@ namespace KesslerSyndrome
             List<Part> parts = FlightGlobals.ActiveVessel.parts;
             if (parts.Count == 0) return;
             bool partFound = false;
+            Part destroyed = parts.ElementAt(0);
             while (!partFound)
             {
                 i = r.Next(parts.Count);
-                Part destroyed = parts.ElementAt(i);
+                destroyed = parts.ElementAt(i);
                 if (destroyed.ShieldedFromAirstream) continue;
                 partFound = true;
                 destroyed.explode();
             }
             Debug.Log("[KesslerSyndrome] Debris impact!");
-            ScreenMessages.PostScreenMessage("Micrometeoroid Impact Detected!");
+            ScreenMessages.PostScreenMessage("Micrometeoroid Impact Detected! "+destroyed.partName+" has been destroyed");
             spawned = false;
         }
         public void OnGUI()
