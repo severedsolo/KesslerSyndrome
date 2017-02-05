@@ -16,12 +16,24 @@ namespace KesslerSyndrome
         bool showGUI = false;
         ApplicationLauncherButton ToolbarButton;
         Rect Window = new Rect(20, 100, 240, 50);
-        bool debug = true;
+        bool paused = false;
 
         void Awake()
         {
             GameEvents.onGUIApplicationLauncherReady.Add(GUIReady);
             GameEvents.onGameSceneSwitchRequested.Add(onGameSceneSwitchRequested);
+            GameEvents.onGamePause.Add(onGamePause);
+            GameEvents.onGameUnpause.Add(onGameUnpause);
+        }
+
+        private void onGameUnpause()
+        {
+            paused = false;
+        }
+
+        private void onGamePause()
+        {
+            paused = true;
         }
 
         private void onGameSceneSwitchRequested(GameEvents.FromToAction<GameScenes, GameScenes> data)
@@ -36,10 +48,12 @@ namespace KesslerSyndrome
             if (FlightGlobals.ActiveVessel.altitude < FlightGlobals.ActiveVessel.mainBody.atmosphereDepth) return;
             if (DateTime.Now < nextTick) return;
             nextTick = DateTime.Now.AddSeconds(30);
+            if (paused) return;
             if (spawned) DebrisTrigger(20);
             int spawn = 0;
             spawn = SpawnChance();
-            if (r.Next(1, 100) > spawn) return;
+            int spawnRoll = r.Next(1, 100);
+            if (spawnRoll > spawn) return;
             spawned = true;              
         }
 
@@ -103,7 +117,7 @@ namespace KesslerSyndrome
                 destroyed.explode();
             }
             Debug.Log("[KesslerSyndrome] Debris impact!");
-            ScreenMessages.PostScreenMessage("Micrometeoroid Impact Detected! "+destroyed.partName+" has been destroyed");
+            ScreenMessages.PostScreenMessage("Micrometeoroid Impact Detected! "+destroyed.name+" has been destroyed");
             spawned = false;
         }
         public void OnGUI()
