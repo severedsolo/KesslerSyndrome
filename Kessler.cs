@@ -11,13 +11,12 @@ namespace KesslerSyndrome
     public class Kessler : MonoBehaviour
     {
         DateTime nextTick = DateTime.MinValue;
-        double lastChecked = 0;
-        double impactTimer = 0;
         bool spawned;
         System.Random r = new System.Random();
         bool showGUI = false;
         ApplicationLauncherButton ToolbarButton;
         Rect Window = new Rect(20, 100, 240, 50);
+        bool debug = true;
 
         void Awake()
         {
@@ -37,19 +36,10 @@ namespace KesslerSyndrome
             if (FlightGlobals.ActiveVessel.altitude < FlightGlobals.ActiveVessel.mainBody.atmosphereDepth) return;
             if (DateTime.Now < nextTick) return;
             nextTick = DateTime.Now.AddSeconds(30);
-            if (impactTimer > 0)
-            {
-                double timeSinceLastTick = Planetarium.GetUniversalTime() - lastChecked;
-                lastChecked = Planetarium.GetUniversalTime();
-                impactTimer = impactTimer - timeSinceLastTick;
-                return;
-            }
             if (spawned) DebrisTrigger(20);
             int spawn = 0;
             spawn = SpawnChance();
-            if (r.Next(1, 100) > spawn || spawned) return;
-            impactTimer = r.Next(1, 300);
-            Debug.Log("[KesslerSyndrome] Added new Debris Cloud");
+            if (r.Next(1, 100) > spawn) return;
             spawned = true;              
         }
 
@@ -59,7 +49,12 @@ namespace KesslerSyndrome
             Vessel active = FlightGlobals.ActiveVessel;
             if (active == null) return 0;
             CelestialBody SOI = active.mainBody;
+            double activeInclination = active.orbit.inclination;
+            bool activeIsRetrograde = active.orbit.inclination > 90;
+            if (activeIsRetrograde) activeInclination = 180.0f - activeInclination;
             double minAltitude = SOI.atmosphereDepth;
+            double minInclination = activeInclination - 15.0f;
+            double maxInclination = activeInclination + 15.0f;
             if (minAltitude < 5000) minAltitude = 5000;
             if (active.altitude < minAltitude) return 0;
             IEnumerable<Vessel> vessels = FlightGlobals.Vessels;
@@ -68,7 +63,19 @@ namespace KesslerSyndrome
             for(int i = 0; i < vessels.Count(); i++)
             {
                 Vessel v = vessels.ElementAt(i);
-                if (v.vesselType == VesselType.Debris && v.mainBody == SOI && v.orbit.ApA > active.altitude && v.orbit.PeA > minAltitude) debris = debris + 1.0f;
+                if (v == active) continue;
+                if (v.vesselType == VesselType.Debris && v.mainBody == SOI && v.orbit.ApA > active.altitude && v.orbit.PeA > minAltitude)
+                {
+                    bool debrisIsRetrograde = v.orbit.inclination > 90;
+                    bool retroCheck = false;
+                    if (activeIsRetrograde && !debrisIsRetrograde) retroCheck = true;
+                    else if (!activeIsRetrograde && debrisIsRetrograde) retroCheck = true;
+                    if (v.orbit.inclination > minInclination && v.orbit.inclination < maxInclination) debris = debris + 1.0f;
+                    else if ((180.0f - v.orbit.inclination) > minInclination && (180.0f - v.orbit.inclination < maxInclination)) debris = debris + 1.0f;
+                    else continue;
+                    if ((active.orbit.inclination + 15) > v.orbit.inclination && (active.orbit.inclination - 15) < v.orbit.inclination) retroCheck = false;
+                    if (retroCheck) debris = debris + 1.0f;
+                }
             }
             int CloudChance = HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().CloudChance;
             float chance = (debris / CloudChance)*100.0f;

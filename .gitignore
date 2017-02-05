@@ -7,3 +7,9 @@ obj/Debug/KesslerSyndrome.csprojResolveAssemblyReference.cache
 *.pdb
 *.cache
 *.zip
+bin/Debug/KesslerSyndrome.dll.config
+*.mdb
+app.config
+*.log
+bin/Debug/PartDatabase.cfg
+*.exe
