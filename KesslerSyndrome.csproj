@@ -19,7 +19,9 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,7 +53,16 @@
     <Compile Include="KesslerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"D:\Documents\Visual Studio 2015\Projects\KesslerSyndrome\KesslerSyndrome\bin\Release\pdb2mdb\pdb2mdb.exe" "$(TargetFileName)"
+xcopy /Y "$(TargetPath)" "F:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - ModTest\GameData\KesslerSyndrome"
+xcopy /Y "$(TargetDir)$(TargetName).pdb" "F:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - ModTest\GameData\KesslerSyndrome"
+xcopy /Y "$(TargetDir)$(TargetName).dll.mdb" "F:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - ModTest\GameData\KesslerSyndrome"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
