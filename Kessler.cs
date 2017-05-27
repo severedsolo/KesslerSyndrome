@@ -155,11 +155,12 @@ namespace KesslerSyndrome
             GUILayout.Label("Chance of Debris cloud " + (SpawnChance()) + "%");
             GUI.DragWindow();
         }
-
         void OnDestroy()
         {
             GameEvents.onGUIApplicationLauncherReady.Remove(GUIReady);
             GameEvents.onGameSceneSwitchRequested.Remove(onGameSceneSwitchRequested);
+            GameEvents.onGamePause.Remove(onGamePause);
+            GameEvents.onGameUnpause.Remove(onGameUnpause);
         }
     }
 }

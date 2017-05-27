@@ -53,9 +53,6 @@
     <Compile Include="KesslerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"D:\Documents\Visual Studio 2015\Projects\KesslerSyndrome\KesslerSyndrome\bin\Release\pdb2mdb\pdb2mdb.exe" "$(TargetFileName)"
