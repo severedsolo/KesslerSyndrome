@@ -13,11 +13,11 @@ namespace KesslerSyndrome
 
         [GameParameters.CustomIntParameterUI("Max Debris", minValue = 1, maxValue = 250, newGameOnly = false, toolTip = "How much debris is needed for a 100% chance of debris generating")]
         public int CloudChance = 100;
-        [GameParameters.CustomParameterUI("Decay orbits (not working yet)?")]
+        [GameParameters.CustomParameterUI("Decay orbits?")]
         public bool orbitalDecay = false;
-        [GameParameters.CustomFloatParameterUI("Height of exosphere (as percentage of atmosphere)", toolTip = "setting this to 200% at Kerbin would decay anything with a PE of less than 140km")]
-        public float decayHeight = 2.0f;
-        [GameParameters.CustomFloatParameterUI("Decay Percentage)", toolTip = "This doesn't do anything yet",maxValue = 1.0f)]
+        [GameParameters.CustomFloatParameterUI("Decay Percentage)", toolTip = "How much of a vessels SMA does it lose per orbit", minValue = 0, maxValue = 1.0f, asPercentage = true)]
         public float decayPercent = 0.01f;
+        [GameParameters.CustomParameterUI("Decay affects non-debris vessels?")]
+        public bool allDecay = false;
     }
 }

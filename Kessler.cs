@@ -17,6 +17,7 @@ namespace KesslerSyndrome
         ApplicationLauncherButton ToolbarButton;
         Rect Window = new Rect(20, 100, 240, 50);
         bool paused = false;
+        bool debug = false;
 
         void Awake()
         {
@@ -24,6 +25,7 @@ namespace KesslerSyndrome
             GameEvents.onGameSceneSwitchRequested.Add(onGameSceneSwitchRequested);
             GameEvents.onGamePause.Add(onGamePause);
             GameEvents.onGameUnpause.Add(onGameUnpause);
+            Debug.Log("[KesslerSyndrome]: Kessler is awake");
         }
 
         private void onGameUnpause()
@@ -41,11 +43,13 @@ namespace KesslerSyndrome
             if (ToolbarButton == null) return;
             ApplicationLauncher.Instance.RemoveModApplication(ToolbarButton);
             showGUI = false;
+            Debug.Log("[KesslerSyndrome]: Toolbar button removed");
         }
 
         void Update()
         {
             if (FlightGlobals.ActiveVessel.altitude < FlightGlobals.ActiveVessel.mainBody.atmosphereDepth) return;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay && FlightGlobals.ActiveVessel.altitude > FlightGlobals.ActiveVessel.mainBody.scienceValues.spaceAltitudeThreshold) return;
             if (DateTime.Now < nextTick) return;
             nextTick = DateTime.Now.AddSeconds(30);
             if (paused) return;
@@ -80,6 +84,7 @@ namespace KesslerSyndrome
                 if (v == active) continue;
                 if (v.vesselType == VesselType.Debris && v.mainBody == SOI && v.orbit.ApA > active.altitude && v.orbit.PeA > minAltitude)
                 {
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay && v.orbit.PeA > v.mainBody.scienceValues.spaceAltitudeThreshold) continue;
                     bool debrisIsRetrograde = v.orbit.inclination > 90;
                     bool retroCheck = false;
                     if (activeIsRetrograde && !debrisIsRetrograde) retroCheck = true;
@@ -93,6 +98,7 @@ namespace KesslerSyndrome
             }
             int CloudChance = HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().CloudChance;
             float chance = (debris / CloudChance)*100.0f;
+            if (debug) Debug.Log("[KesslerSyndrome]: Spawn Chance is " +(int)chance +"%");
             return (int)chance;
         }
 
@@ -135,6 +141,7 @@ namespace KesslerSyndrome
             if (ToolbarButton == null)
             {
                 ToolbarButton = ApplicationLauncher.Instance.AddModApplication(GUISwitch, GUISwitch, null, null, null, null, ApplicationLauncher.AppScenes.FLIGHT, GameDatabase.Instance.GetTexture("KesslerSyndrome/Icon", false));
+                Debug.Log("[KesslerSyndrome]: Toolbar Button added");
             }
         }
 
@@ -143,10 +150,12 @@ namespace KesslerSyndrome
             if (showGUI)
             {
                 showGUI = false;
+                Debug.Log("[KesslerSyndrome]: GUI turned off");
             }
             else
             {
                 showGUI = true;
+                Debug.Log("[KesslerSyndrome]: GUI turned on");
             }
         }
 
@@ -161,6 +170,7 @@ namespace KesslerSyndrome
             GameEvents.onGameSceneSwitchRequested.Remove(onGameSceneSwitchRequested);
             GameEvents.onGamePause.Remove(onGamePause);
             GameEvents.onGameUnpause.Remove(onGameUnpause);
+            Debug.Log("[KesslerSyndrome]: Kessler destroyed");
         }
     }
 }
