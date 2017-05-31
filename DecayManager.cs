@@ -16,8 +16,13 @@ namespace KesslerSyndrome
 
         private void Start()
         {
-            if (!HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay) Destroy(this);
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay)
+            {
+                Debug.Log("[KesslerSyndrome]: DecayManager is turned off. Destroying instance");
+                Destroy(this);
+            }
             GameEvents.onGameStateSave.Add(onGameStateSave);
+            GameEvents.onStageSeparation.Add(onStageSeparation);
             Debug.Log("[KesslerSyndrome]: DecayManager is awake");
             if (FlightGlobals.Vessels.Count == 0) return;
             List<Vessel> decayCandidates = new List<Vessel>();
@@ -26,6 +31,7 @@ namespace KesslerSyndrome
                 Vessel v = FlightGlobals.Vessels.ElementAt(i);
                 if (v == null) continue;
                 if (v == FlightGlobals.ActiveVessel) continue;
+                if (!v.mainBody.atmosphere) continue;
                 if (v.vesselType == VesselType.EVA || v.vesselType == VesselType.Flag || v.vesselType == VesselType.SpaceObject || v.vesselType == VesselType.Unknown) continue;
                 if (!HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().allDecay && v.vesselType != VesselType.Debris) continue;
                 if (v.Landed || v.Splashed) continue;
@@ -48,12 +54,16 @@ namespace KesslerSyndrome
                     int orbitsToCatchUp = (int)timeToCatchUp / (int)v.orbit.period;
                     Debug.Log("[KesslerSyndrome]: " + v.id + " needs to catch up on " + orbitsToCatchUp + " orbits worth of decay");
                     if (orbitsToCatchUp == 0) continue;
-                    float decay = 1.0f - (orbitsToCatchUp * HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().decayPercent);
+                    double decay = 1.0f - (orbitsToCatchUp * GetDecayPercent(v));
                     if (decay < 0) decay = 0;
                     v.orbit.semiMajorAxis = v.orbit.semiMajorAxis * decay;
                     Debug.Log("[KesslerSyndrome]: Caught up with " + v.id + "'s decay");
                     nextDecay.Add(v, v.orbit.timeToPe + Planetarium.GetUniversalTime());
                 }
+            }
+            catch
+            {
+                Debug.Log("[KesslerSyndrome]: Encountered a problem loading the decay manager. This message is harmless if this is the first time the decay manager has been loaded on this save");
             }
             finally
             {
@@ -64,6 +74,26 @@ namespace KesslerSyndrome
                     if (nextDecay.TryGetValue(v, out d)) continue;
                     nextDecay.Add(v, v.orbit.timeToPe + Planetarium.GetUniversalTime());
                 }
+            }
+        }
+
+        private void onStageSeparation(EventReport data)
+        {
+            Debug.Log("[KesslerSyndrome]: Staging Event detected. Checking for new debris");
+            for(int i = 0; i<FlightGlobals.Vessels.Count; i++)
+            {
+                Vessel v = FlightGlobals.Vessels.ElementAt(i);
+                if (v == null) continue;
+                double d;
+                if (nextDecay.TryGetValue(v, out d)) continue;
+                if (v == FlightGlobals.ActiveVessel) continue;
+                if (!v.mainBody.atmosphere) continue;
+                if (v.vesselType == VesselType.EVA || v.vesselType == VesselType.Flag || v.vesselType == VesselType.SpaceObject || v.vesselType == VesselType.Unknown) continue;
+                if (!HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().allDecay && v.vesselType != VesselType.Debris) continue;
+                if (v.Landed || v.Splashed) continue;
+                if (v.altitude > v.mainBody.scienceValues.spaceAltitudeThreshold) continue;
+                nextDecay.Add(v, Planetarium.GetUniversalTime() + v.orbit.timeToPe);
+                Debug.Log("[KesslerSyndrome]: Added " + v.name + " to the decay list");
             }
         }
 
@@ -91,11 +121,19 @@ namespace KesslerSyndrome
                     return;
                 }
                 if (v.Value > Planetarium.GetUniversalTime()) continue;
-                v.Key.orbit.semiMajorAxis = v.Key.orbit.semiMajorAxis * (1.0f - HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().decayPercent);
+                v.Key.orbit.semiMajorAxis = v.Key.orbit.semiMajorAxis * (1.0f - GetDecayPercent(v.Key));
                 Debug.Log("[KesslerSyndrome]: decayed " + v.Key.id + "'s orbit");
                 nextDecay.Remove(v.Key);
                 nextDecay.Add(v.Key, Planetarium.GetUniversalTime() + v.Key.orbit.timeToPe);
             }
+        }
+
+        double GetDecayPercent(Vessel v)
+        {
+            double decayDepth = v.orbit.PeA / v.mainBody.scienceValues.spaceAltitudeThreshold;
+            decayDepth = 1.0f - decayDepth;
+            decayDepth = decayDepth * HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().decayPercent;
+            return decayDepth;
         }
 
         private void OnDestroy()
