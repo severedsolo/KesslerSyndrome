@@ -13,3 +13,5 @@ app.config
 *.log
 bin/Debug/PartDatabase.cfg
 *.exe
+*.CopyComplete
+*.force
