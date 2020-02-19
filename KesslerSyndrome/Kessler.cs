@@ -49,7 +49,7 @@ namespace KesslerSyndrome
         void Update()
         {
             if (FlightGlobals.ActiveVessel.altitude < FlightGlobals.ActiveVessel.mainBody.atmosphereDepth) return;
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay && FlightGlobals.ActiveVessel.altitude > FlightGlobals.ActiveVessel.mainBody.scienceValues.spaceAltitudeThreshold) return;
+            if (FlightGlobals.ActiveVessel.altitude > FlightGlobals.ActiveVessel.mainBody.scienceValues.spaceAltitudeThreshold) return;
             if (DateTime.Now < nextTick) return;
             nextTick = DateTime.Now.AddSeconds(30);
             if (paused) return;
@@ -84,7 +84,7 @@ namespace KesslerSyndrome
                 if (v == active) continue;
                 if (v.vesselType == VesselType.Debris && v.mainBody == SOI && v.orbit.ApA > active.altitude && v.orbit.PeA > minAltitude)
                 {
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<KesslerSettings>().orbitalDecay && v.orbit.PeA > v.mainBody.scienceValues.spaceAltitudeThreshold) continue;
+                    if (v.orbit.PeA > v.mainBody.scienceValues.spaceAltitudeThreshold) continue;
                     bool debrisIsRetrograde = v.orbit.inclination > 90;
                     bool retroCheck = false;
                     if (activeIsRetrograde && !debrisIsRetrograde) retroCheck = true;
